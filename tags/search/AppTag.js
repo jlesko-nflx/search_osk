@@ -110,7 +110,7 @@ export default class AppTag extends BaseTag {
     	else if (char == '*') {
     		this.query = '';
     		char = '';
-    		SND_CLICK.play();
+    		playSound('click');
     	}
 
     	this.query += char;
