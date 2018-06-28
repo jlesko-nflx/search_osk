@@ -1,4 +1,5 @@
 import BaseTag from '/tags/_common/BaseTag.js';
+import KeyTracking from './lib/KeyTracking.js';
 
 X.variants({
 	fResultsBoxLabels: false,
@@ -81,14 +82,30 @@ export default class ResultsTag extends BaseTag {
 	    	}
     	}
 
+        if (dir == 'L' || dir == 'R') {
+            if (exit == 0) {
+                KeyTracking.onMove('result');
+            }
+        }
     	
     	this.updateFocusRing();
 
     	let boxesPerRow = X.flag('fResultsSuggestionsHorizontal') ? 4 : 3;
     	let numRows = Math.ceil(this.results.suggestions.length / boxesPerRow);
 
-    	if (dir == 'D') {
+        if (dir == 'SELECT') {
+            let clickedNum = (this.rowNum * boxesPerRow) + this.focus.num;
+            let clickedId = this.results.ids[clickedNum];
+            let clickedBox = this.results.titles[clickedId];
+            KeyTracking.onClickResult(clickedBox.title.short);
+
+
+            this.$('.focus-ring').css({ 'border-color': '#fc0', 'box-shadow': '0 0 1rem rgba(255,255,0, 1)' });
+
+        }
+    	else if (dir == 'D') {
     		if (this.rowNum < numRows) {
+                KeyTracking.onMove('result');
     			this.rowNum += 1;
     			console.log(this.rowNum);
     			this.slide($('.results-boxes-slider'), '.box', 'y', 300, this.rowNum * boxesPerRow);
@@ -107,6 +124,7 @@ export default class ResultsTag extends BaseTag {
     			}
     			
     		} else {
+                KeyTracking.onMove('result');
     			this.rowNum -= 1;
     			this.slide($('.results-boxes-slider'), '.box', 'y', 300, this.rowNum * boxesPerRow);
     		}

@@ -7,6 +7,8 @@ import AzTag          from './keys/AzTag.js';
 import NumbersTag     from './keys/NumbersTag.js';
 import FloatTag       from './keys/FloatTag.js';
 import KeyPrediction  from './lib/KeyPrediction.js';
+import KeyTracking    from './lib/KeyTracking.js';
+import CacheData      from '/tags/search/data/cached-responses.js';
 
 document.title = 'Search';
 
@@ -41,16 +43,44 @@ X.variants({
 	fQuerySimpleX: true,
 
 	sInputThrottleMs: '40',
+
+	fResultsCache: false,
 });
 
-let MAX_RESULTS = 15;
+let MAX_RESULTS = 30;
 
 let TITLE_CONFIG = {"titleIds":[],"title":{"short":true},"artwork":[{"name":"SDP","type":"sdp","height":131},{"name":"SDPLARGE","type":"sdp","height":720},{"name":"STORY_ART","type":"StoryArt","height":720},{"name":"TITLE_TREATMENT","type":"TITLE_TREATMENT","height":400},{"name":"TITLE_TREATMENT_CROPPED","type":"TITLE_TREATMENT_CROPPED","height":400},{"name":"LOGO_STACKED_CROPPED","type":"LOGO_STACKED_CROPPED","height":720},{"name":"LOGO_HORIZONTAL_CROPPED","type":"LOGO_HORIZONTAL_CROPPED","height":720},{"name":"BOXSHOT","type":"boxshot","height":200},{"name":"BB2_OG_LOGO_PLUS","type":"BB2_OG_LOGO_PLUS","height":720},{"name":"BB2_OG_LOGO_PLUS_CROPPED","type":"BB2_OG_LOGO_PLUS_CROPPED","height":720},{"name":"TALL_PANEL","type":"TALL_PANEL","height":720},{"name":"SHORT_PANEL","type":"SHORT_PANEL","height":720}],"genres":3,"moods":3,"isOriginal":true,"seasons":true,"cid":"504586155175348453"};
 
 let ENDPOINT_URL = 'https://www.stage.netflix.com';
 
 
+
+
+
+// Seed prediction data
+
 KeyPrediction.analyze(DATA.videos);
+
+
+
+// Tracking
+
+let trackingVariant = '';
+if (X.flag('fAzStacked')) {
+	trackingVariant = 'stacked';
+}
+else if (X.flag('fAzChunkZebra') || X.flag('fAzChunkSpace')) {
+	trackingVariant = 'chunked';
+}
+else if (X.flag('fAzPredict')) {
+	trackingVariant = 'predict';
+}
+else {
+	trackingVariant = 'other';
+}
+
+KeyTracking.init(trackingVariant, X.string('sAzStartKey'));
+
 
 
 
@@ -65,6 +95,26 @@ window.playSound = function(soundId){
 	}
 };
 
+
+// AJAX fallback
+
+if (X.param('fResultsCache')) {
+
+	$.originalAjaxFunction = $.ajax;
+
+	$.ajax = function(opts) {
+
+	  const cachedResponse = CacheData[opts.url];
+	  if (cachedResponse) {
+	    setTimeout(() => {
+	      opts.success(cachedResponse);
+	    }, 300)
+	  } else {
+	    console.log('not cached', opts.url);
+	    $.originalAjaxFunction(opts)
+	  }
+	};
+}
 
 
 export default class AppTag extends BaseTag {
@@ -97,20 +147,23 @@ export default class AppTag extends BaseTag {
 
     updateQuery(char) {
     	
-    	if (char == 'Q') {
-    		char += 'U';
-    	}
-    	else if (char == '_') {
+    	if (char == '_') {
     		char = ' ';
+    		KeyTracking.onClickKey(char);
     	}
     	else if (char == '<') {
     		this.query = this.query.slice(0, this.query.length - 1);
     		char = '';
+    		KeyTracking.onDelete();
     	}
     	else if (char == '*') {
     		this.query = '';
     		char = '';
     		playSound('click');
+    		KeyTracking.onClear();
+    	}
+    	else {
+    		KeyTracking.onClickKey(char);
     	}
 
     	this.query += char;
@@ -177,7 +230,7 @@ export default class AppTag extends BaseTag {
     	this.fetchTime = Date.now();
 
     	let payload = { 
-    		query: this.query,
+    		query: this.query.toLowerCase(),
     		maxResults: MAX_RESULTS,
     		type: 'titles',
     	};
@@ -217,7 +270,7 @@ export default class AppTag extends BaseTag {
 
     remoteSuggestions() {
     	let payload = { 
-    		query: this.query,
+    		query: this.query.toLowerCase(),
     		maxResults: 10,
     		type: 'suggestions',
     	};

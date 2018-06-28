@@ -79,7 +79,7 @@ export default class AzTag extends KeysTag {
     	
     	let exit = this.onKeyNav(dir);
 
-    	if (this.data.isNz) {
+    	if (this.data.isNz && dir !== 'D') {
     		if (dir == 'U') {
 	    		this.hasInput(false);
 	    		jtag('.az-keys').takeFocus(this.focus.num);
@@ -92,7 +92,7 @@ export default class AzTag extends KeysTag {
 	    	}
 	    	else if (dir == 'D') {
 	    		
-	    		if (X.flag('fAzStacked')) {
+	    		if (X.flag('fAzStacked') && !this.data.isNz) {
 	    			this.hasInput(false);
 	    			jtag('.nz-keys').takeFocus(this.focus.num);
 	    		}
@@ -124,7 +124,7 @@ export default class AzTag extends KeysTag {
 	    				jtag('.results-boxes').takeFocus(focusNum);
 
 	    			} else {
-	    				jtag('.results-boxes').takeFocus(-1);
+	    				jtag('.results-boxes').takeFocus(0);
 	    			}
 	    		}
 	    	}

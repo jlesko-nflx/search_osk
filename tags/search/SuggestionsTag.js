@@ -1,4 +1,5 @@
 import BaseTag from '/tags/_common/BaseTag.js';
+import KeyTracking    from './lib/KeyTracking.js';
 
 export default class SuggestionsTag extends BaseTag {
 
@@ -42,13 +43,16 @@ export default class SuggestionsTag extends BaseTag {
     			jumpToQuery = true;
     		}
     		this.slide($('.results-suggestions'), '.suggestion', 'x', 0, this.focus.num);
+            KeyTracking.onMove('suggestion');
 
     	} else {
     		exit = this.handleUD(dir);
     		dirToBoxes = 'R';
     		if (exit == -1) {
     			jumpToQuery = true;
-    		}
+    		} else {
+                KeyTracking.onMove('suggestion');
+            }
     	}
     	
     	this.updateFocus('.suggestion');
@@ -65,7 +69,9 @@ export default class SuggestionsTag extends BaseTag {
     	}
 
         if (dir == 'SELECT') {
-            jtag('.search').setQuery(this.results.suggestions[this.focus.num]);
+            let query = this.results.suggestions[this.focus.num];
+            KeyTracking.onClickSuggestion(query);
+            jtag('.search').setQuery(query);
         }
      }
 

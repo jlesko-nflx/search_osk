@@ -1,5 +1,5 @@
 import BaseTag from '/tags/_common/BaseTag.js';
-
+import KeyTracking from './lib/KeyTracking.js';
 
 export default class KeysTag extends BaseTag {
 
@@ -23,6 +23,7 @@ export default class KeysTag extends BaseTag {
 
     onKeyNav(dir) {
     	if (dir == 'SELECT') {
+
     		if (this.focus.id == '#') {
     			this.$('.key.focus').text(jtag('.az-keys').isMode('num') ? '#' : 'ABC');
     			jtag('.az-keys').toggleNumbers();
@@ -30,11 +31,15 @@ export default class KeysTag extends BaseTag {
     			jtag('.search').updateQuery(this.focus.id);
     			playSound('click');
     		}
+
     	} else {
+
     		let exit = this.handleLR(dir);
     		this.updateFocus('.key');
     		
     		playSound('move');
+
+    		KeyTracking.onMove('key');
 
     		return exit;
     	}
