@@ -64,20 +64,22 @@ KeyPrediction.analyze(DATA.videos);
 
 
 // Tracking
-
 let trackingVariant = '';
+let layout = 'linear';
+let suggestionsPlacement = 'suggestionsAsList';
 if (X.flag('fAzStacked')) {
-	trackingVariant = 'stacked';
+	layout = 'stacked';
 }
 else if (X.flag('fAzChunkZebra') || X.flag('fAzChunkSpace')) {
-	trackingVariant = 'chunked';
+	layout = 'chunked';
 }
-else if (X.flag('fAzPredict')) {
-	trackingVariant = 'predict';
+
+if (X.flag('fResultsSuggestionsHorizontal')) {
+  suggestionsPlacement = 'suggestionsAsRow';
 }
-else {
-	trackingVariant = 'other';
-}
+
+trackingVariant = [layout, suggestionsPlacement].join(';');
+console.log('tracking variant', trackingVariant)
 
 KeyTracking.init(trackingVariant, X.string('sAzStartKey'));
 

@@ -91,7 +91,7 @@ export default class ResultsTag extends BaseTag {
     	this.updateFocusRing();
 
     	let boxesPerRow = X.flag('fResultsSuggestionsHorizontal') ? 4 : 3;
-    	let numRows = Math.ceil(this.results.suggestions.length / boxesPerRow);
+    	let numRows = Math.ceil(this.results.ids.length / boxesPerRow);
 
         if (dir == 'SELECT') {
             let clickedNum = (this.rowNum * boxesPerRow) + this.focus.num;
